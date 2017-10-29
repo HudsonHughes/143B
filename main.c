@@ -166,8 +166,11 @@ int create(char* symbolic_file_name) {
     int free_descriptor_index = get_free_descriptor();
     if(free_descriptor_index == -1) return -1;
     lseek(0, (free_descriptor_index - 1) * 4 * 2);
-    if(write(0, symbolic_file_name, 4) == -1) return -1;
     char bytes[4];
+    memcpy(bytes, symbolic_file_name, 4);
+    symbolic_file_name[3] = '\0';
+    if(write(0, symbolic_file_name, 4) == -1) return -1;
+    bytes[4];
     memcpy(bytes, &free_descriptor_index, 4);
     if(write(0, bytes, 4) == -1) return -1;
     set_fd_size(free_descriptor_index, 0);
@@ -380,7 +383,7 @@ int directory(){
             read_block(get_fd_block_index(oft[0].index, j / 3), block);
             for (int i = 0; i < 8; i++) {
                 directoy_entry* entry = ((directoy_entry *) (char *) block + i);
-                entry->name[3] = '\n';
+                entry->name[3] = '\0';
                 if(!entry->name[0] == 0) {
                     printf("%s ", entry->name);
                     entry_count--;
@@ -509,9 +512,9 @@ void print_ldisk(){
         if(h == get_fd_block_index(0, 0) || h == get_fd_block_index(0, 1) || h == get_fd_block_index(0, 2)){
             printf("block %d\n", h);
             for(int k = 0; k < 64; k += 8){
-                ((directoy_entry*) (start + h * 64 + k))->name[3] = '\n';
+                ((directoy_entry*) (start + h * 64 + k))->name[3] = '\0';
 
-                printf("%4s %2d, ", ((directoy_entry*) (start + h * 64 + k))->name, ((directoy_entry*) (start + h * 64 + k))->index);
+                printf("%3s %2d, ", ((directoy_entry*) (start + h * 64 + k))->name, ((directoy_entry*) (start + h * 64 + k))->index);
             }
             printf("\n");
         }else{
